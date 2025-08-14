@@ -114,7 +114,7 @@ angular.module('towerAdminApp')
     });
 
     // Fetch recent audit logs
-    $http.get('http://127.0.0.1:8000/api/audit-logs/?limit=5')
+    $http.get('http://localhost:8000/api/audit-logs/?limit=5')
         .then(function(res) {
             $scope.recentChanges = res.data.results || res.data || [];
             $scope.loadingLogs = false;

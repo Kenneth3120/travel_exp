@@ -59,8 +59,8 @@
 
 <body ng-controller="MainController">
 
-  <!-- Navbar -->
-  <div class="navbar">
+  <!-- Navbar (only show when authenticated) -->
+  <div class="navbar" ng-if="isAuthenticated()">
     <div class="nav-left">AAP Administration</div>
     <div class="nav-right">
 
@@ -85,13 +85,16 @@
         </svg>
       </a>
 
+      <!-- User Info -->
+      <span class="user-info" ng-if="getCurrentUser()">{{getCurrentUser().username}}</span>
+
       <!-- Logout -->
-      <a href="#" class="logout-btn">Logout</a>
+      <a href="#" class="logout-btn" ng-click="logout()">Logout</a>
     </div>
   </div>
 
-  <!-- Main Content -->
-  <div class="container">
+  <!-- Main Content Container (only show when authenticated) -->
+  <div class="container" ng-if="isAuthenticated()">
     <!-- Sidebar -->
     <div class="sidebar">
       <ul>
@@ -109,9 +112,12 @@
     <!-- View -->
     <div class="content" ng-view></div>
   </div>
+  
+  <!-- Login View (only show when not authenticated) -->
+  <div ng-if="!isAuthenticated()" ng-view></div>
 
-  <!-- Floating Theme Toggle -->
-  <button id="themeToggleBtn" class="theme-toggle-btn" aria-label="Toggle Theme">🌙</button>
+  <!-- Floating Theme Toggle (only show when authenticated) -->
+  <button id="themeToggleBtn" class="theme-toggle-btn" aria-label="Toggle Theme" ng-if="isAuthenticated()">🌙</button>
 
 </body>
 </html>

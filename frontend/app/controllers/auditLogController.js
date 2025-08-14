@@ -3,7 +3,7 @@ angular.module('towerAdminApp').controller('AuditlogController', function($scope
     $scope.auditlogs = [];
 
     // Fetch from backend API
-    $http.get("http://127.0.0.1:8000/api/audit-logs/")
+    $http.get("http://localhost:8000/api/audit-logs/")
         .then(function(response) {
             $scope.auditlogs = response.data;
         })

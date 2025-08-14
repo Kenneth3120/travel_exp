@@ -37,7 +37,7 @@ class TowerInstance(models.Model):
     name = models.CharField(max_length=100)
     url = models.URLField()
     username = models.CharField(max_length=100, blank=True)
-    password = EncryptedTextField(blank=True, null=True)
+    password = models.CharField(max_length=100, blank=True, null=True)
     region = models.CharField(max_length=50, blank=True)
     environment = models.CharField(max_length=50, blank=True)
     status = models.CharField(max_length=20, default='active')

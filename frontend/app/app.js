@@ -6,6 +6,60 @@ angular.module('towerAdminApp', ['ngRoute', 'ngResource'])
 
   $routeProvider
 
+    /* ================= Login ================= */
+    .when('/login', {
+      template: `
+        <div class="login-container">
+          <div class="login-card">
+            <div class="login-header">
+              <h1 class="login-title">AAP Administration</h1>
+              <p class="login-subtitle">Sign in to your account</p>
+            </div>
+            
+            <form ng-submit="login()" class="login-form" novalidate>
+              <div class="form-group">
+                <label for="username">Username</label>
+                <input 
+                  type="text" 
+                  id="username"
+                  ng-model="credentials.username" 
+                  placeholder="Enter your username"
+                  ng-focus="clearError()"
+                  required 
+                />
+              </div>
+              
+              <div class="form-group">
+                <label for="password">Password</label>
+                <input 
+                  type="password" 
+                  id="password"
+                  ng-model="credentials.password" 
+                  placeholder="Enter your password"
+                  ng-focus="clearError()"
+                  required 
+                />
+              </div>
+              
+              <div ng-if="loginError" class="error-message">
+                {{loginError}}
+              </div>
+              
+              <button type="submit" class="login-btn" ng-disabled="isLogging">
+                <span ng-if="!isLogging">Sign In</span>
+                <span ng-if="isLogging">Signing In...</span>
+              </button>
+            </form>
+            
+            <div class="login-footer">
+              <p>Default credentials: admin / admin123</p>
+            </div>
+          </div>
+        </div>
+      `,
+      controller: 'LoginController'
+    })
+
     /* ================= Dashboard ================= */
     .when('/dashboard', {
       template: `
@@ -245,13 +299,31 @@ angular.module('towerAdminApp', ['ngRoute', 'ngResource'])
 
     /* ================= Default ================= */
     .otherwise({
-      redirectTo: '/dashboard'
+      redirectTo: '/login'
     });
 
 })
 
-.run(function($rootScope, AuthService) {
-  AuthService.getUserInfo().then(function(u) {
-    $rootScope.currentUser = u;
+.run(function($rootScope, $location, AuthService) {
+  
+  // Check authentication on route change
+  $rootScope.$on('$routeChangeStart', function(event, next, current) {
+    const isLoginPage = next.$$route && next.$$route.originalPath === '/login';
+    
+    if (!isLoginPage && !AuthService.isAuthenticated()) {
+      event.preventDefault();
+      $location.path('/login');
+    } else if (isLoginPage && AuthService.isAuthenticated()) {
+      // If user is already authenticated and tries to access login, redirect to dashboard
+      event.preventDefault();
+      $location.path('/dashboard');
+    }
   });
+  
+  // Load user info if authenticated
+  if (AuthService.isAuthenticated()) {
+    AuthService.getUserInfo().then(function(user) {
+      $rootScope.currentUser = user;
+    });
+  }
 });

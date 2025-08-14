@@ -66,12 +66,8 @@ WSGI_APPLICATION = 'tower_admin.wsgi.application'
 # Database
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'AAP_ADMIN',
-        'USER': 'aap_admin_admin',
-        'PASSWORD': '9FC2N',
-        'HOST': 'sinv71.xmp.net.intra',
-        'PORT': '5432',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 

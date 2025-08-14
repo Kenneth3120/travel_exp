@@ -19,7 +19,7 @@ angular.module('towerAdminApp')
 
     // Load tower instances
     $scope.loadInstances = function() {
-        $http.get('http://127.0.0.1:8000/api/instances/')
+        $http.get('http://localhost:8000/api/instances/')
         .then(function(res) {
             $scope.towerInstances = res.data.results || res.data;
         })
@@ -30,7 +30,7 @@ angular.module('towerAdminApp')
 
     // Load environments
     $scope.loadEnvironments = function() {
-        $http.get('http://127.0.0.1:8000/api/environments/')
+        $http.get('http://localhost:8000/api/environments/')
         .then(function(res) {
             $scope.environments = res.data.results || res.data;
         })
@@ -41,7 +41,7 @@ angular.module('towerAdminApp')
 
     // Add a new environment
     $scope.addEnv = function() {
-        $http.post('http://127.0.0.1:8000/api/environments/', $scope.newEnv)
+        $http.post('http://localhost:8000/api/environments/', $scope.newEnv)
         .then(function(res) {
             $scope.environments.push(res.data);
             $scope.newEnv = {};
@@ -55,7 +55,7 @@ angular.module('towerAdminApp')
 
     // Delete an environment
     $scope.deleteEnv = function(id) {
-        $http.delete(`http://127.0.0.1:8000/api/environments/${id}/`)
+        $http.delete(`http://localhost:8000/api/environments/${id}/`)
         .then(function() {
             $scope.environments = $scope.environments.filter(e => e.id !== id);
         })

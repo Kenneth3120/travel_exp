@@ -32,7 +32,7 @@ angular.module('towerAdminApp')
 
     // Fetch counts
     const fetchCounts = [
-        $http.get('http://127.0.0.1:8000/api/tower/')
+        $http.get('http://localhost:8000/api/tower/')
             .then(function(res) {
                 $scope.instanceCount = res.data.length || 0;
                 if ($scope.instanceCount > previousInstanceCount) {
@@ -41,7 +41,7 @@ angular.module('towerAdminApp')
                 previousInstanceCount = $scope.instanceCount;
             }),
 
-        $http.get('http://127.0.0.1:8000/api/credentials/')
+        $http.get('http://localhost:8000/api/credentials/')
             .then(function(res) {
                 $scope.credentialCount = res.data.length || 0;
                 if ($scope.credentialCount > previousCredentialCount) {
@@ -50,7 +50,7 @@ angular.module('towerAdminApp')
                 previousCredentialCount = $scope.credentialCount;
             }),
 
-        $http.get('http://127.0.0.1:8000/api/environments/')
+        $http.get('http://localhost:8000/api/environments/')
             .then(function(res) {
                 $scope.environmentCount = res.data.length || 0;
                 if ($scope.environmentCount > previousEnvironmentCount) {

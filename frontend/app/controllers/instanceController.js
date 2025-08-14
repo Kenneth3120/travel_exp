@@ -13,7 +13,7 @@ angular.module('towerAdminApp')
 
     // Load instances from API
     $scope.loadInstances = function() {
-        $http.get('http://127.0.0.1:8000/api/instances/')
+        $http.get('http://localhost:8000/api/instances/')
             .then(function(response) {
                 $scope.instances = response.data;
                 $scope.extractFilterValues();
@@ -38,7 +38,7 @@ angular.module('towerAdminApp')
 
     // Add a new instance
     $scope.addInstance = function() {
-        $http.post('http://127.0.0.1:8000/api/instances/', $scope.newInstance)
+        $http.post('http://localhost:8000/api/instances/', $scope.newInstance)
             .then(function(response) {
                 $scope.instances.push(response.data);
                 $scope.newInstance = {}; // reset form
@@ -51,7 +51,7 @@ angular.module('towerAdminApp')
 
     // Delete an instance
     $scope.deleteInstance = function(id) {
-        $http.delete(`http://127.0.0.1:8000/api/instances/${id}/`)
+        $http.delete(`http://localhost:8000/api/instances/${id}/`)
             .then(function() {
                 $scope.instances = $scope.instances.filter(i => i.id !== id);
                 $scope.extractFilterValues();

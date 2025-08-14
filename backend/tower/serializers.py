@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import TowerInstance, Credential, ExecutionEnvironment, Auditlog
+from .models import TowerInstance, Credential, ExecutionEnvironment, AuditLog
 
 
 User = get_user_model()
@@ -15,7 +15,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 class AuditLogSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Auditlog
+        model = AuditLog
         fields = '__all__'
 
 

@@ -8,7 +8,9 @@ from .views import (
     AuditLogViewSet,
     TowerCredentialProxy,
     UserViewSet,
-    user_info
+    user_info,
+    login_view,
+    logout_view
 )
 
 router = DefaultRouter()
@@ -23,5 +25,7 @@ router.register(r'users', UserViewSet, basename='user')
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('api/user-info/', user_info),
+    path('user-info/', user_info),
+    path('login/', login_view),
+    path('logout/', logout_view),
 ]

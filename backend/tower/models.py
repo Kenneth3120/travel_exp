@@ -14,7 +14,7 @@ class TowerConfig(models.Model):
         return f"{self.base_url} ({self.username})"
 
 
-class Auditlog(models.Model):
+class AuditLog(models.Model):
     ACTION_CHOICES = [
         ('created', 'Created'),
         ('updated', 'Updated'),

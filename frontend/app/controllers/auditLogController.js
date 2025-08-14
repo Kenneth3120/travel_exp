@@ -1,4 +1,4 @@
-angular.module('toweradminApp').controller('AuditlogController', function($scope, $http) {
+angular.module('towerAdminApp').controller('AuditlogController', function($scope, $http) {
 
     $scope.auditlogs = [];
 

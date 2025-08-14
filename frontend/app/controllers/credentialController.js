@@ -14,7 +14,7 @@ angular.module('towerAdminApp')
 
     // Load credentials via Django Proxy
     $scope.loadCredentials = function() {
-        $http.get('http://127.0.0.1:8000/api/tower-credentials/')
+        $http.get('http://localhost:8000/api/tower-credentials/')
         .then(function(response) {
             $scope.credentials = response.data.results || response.data;
             $scope.totalCredentials = $scope.credentials.length;
@@ -28,7 +28,7 @@ angular.module('towerAdminApp')
 
     // Load organizations (instances) for filter dropdown
     $scope.loadInstances = function() {
-        $http.get('http://127.0.0.1:8000/api/organizations/')
+        $http.get('http://localhost:8000/api/organizations/')
         .then(function(response) {
             $scope.towerInstances = response.data.results || response.data;
         })

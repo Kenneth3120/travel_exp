@@ -13,7 +13,7 @@ SECRET_KEY = 'django-insecure-r-pt#&&#j'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []  # Add your domains or IPs here in production
+ALLOWED_HOSTS = ['*']  # Add your domains or IPs here in production
 
 # Application definition
 INSTALLED_APPS = [

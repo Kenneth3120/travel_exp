@@ -43,6 +43,12 @@ MIDDLEWARE = [
 
 # Allow CORS from any origin (good for development; restrict in production)
 CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:4208",
+    "http://127.0.0.1:4208",
+]
+
+ALLOWED_HOSTS = ['*']
 
 ROOT_URLCONF = 'tower_admin.urls'
 

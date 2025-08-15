@@ -10,7 +10,7 @@ import json
 from datetime import datetime
 
 class AAPBackendTester:
-    def __init__(self, base_url="http://127.0.0.1:8000"):
+    def __init__(self, base_url="http://localhost:8001"):
         self.base_url = base_url
         self.api_base = f"{base_url}/api"
         self.access_token = None

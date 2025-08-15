@@ -69,7 +69,7 @@ angular.module('towerAdminApp')
 })
 
 .factory('UserService', function($http) {
-    const base = 'http://localhost:8000/api/users/';
+    const base = 'http://localhost:8001/api/users/';
     return {
         list: function() {
             return $http.get(base).then(function(r) { return r.data; });

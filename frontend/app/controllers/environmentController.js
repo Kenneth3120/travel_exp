@@ -1,76 +1,80 @@
 angular.module('towerAdminApp')
 .controller('EnvironmentController', function($scope, $http) {
 
-    // Filter models
-    $scope.filterName = '';
-    $scope.filterInstance = '';
-
-    // Data models
     $scope.environments = [];
-    $scope.towerInstances = [];
+    $scope.instances = [];
     $scope.newEnv = {};
 
-    // Filter function
-    $scope.envFilter = function(env) {
-        const nameMatch = !$scope.filterName || env.name.toLowerCase().includes($scope.filterName.toLowerCase());
-        const instMatch = !$scope.filterInstance || env.tower_instance === $scope.filterInstance;
-        return nameMatch && instMatch;
-    };
-
-    // Load tower instances
-    $scope.loadInstances = function() {
-        $http.get('http://localhost:8000/api/instances/')
-        .then(function(res) {
-            $scope.towerInstances = res.data.results || res.data;
-        })
-        .catch(function(err) {
-            console.error('Error loading tower instances:', err);
-        });
-    };
-
-    // Load environments
+    // Load environment data
     $scope.loadEnvironments = function() {
-        $http.get('http://localhost:8000/api/environments/')
-        .then(function(res) {
-            $scope.environments = res.data.results || res.data;
-        })
-        .catch(function(err) {
-            console.error('Error loading environments:', err);
-        });
+        $http.get('http://localhost:8001/api/environments/')
+            .then(function(response) {
+                $scope.environments = response.data;
+            })
+            .catch(function(error) {
+                console.error('Error loading environments:', error);
+                alert('Error loading environments. Please check your connection.');
+            });
     };
 
-    // Add a new environment
-    $scope.addEnv = function() {
-        $http.post('http://localhost:8000/api/environments/', $scope.newEnv)
-        .then(function(res) {
-            $scope.environments.push(res.data);
-            $scope.newEnv = {};
-            $scope.envForm.$setPristine();
-            $scope.envForm.$setUntouched();
-        })
-        .catch(function(err) {
-            console.error('Error adding environment:', err);
-        });
+    // Load instances for dropdown
+    $scope.loadInstances = function() {
+        $http.get('http://localhost:8001/api/instances/')
+            .then(function(response) {
+                $scope.instances = response.data;
+            })
+            .catch(function(error) {
+                console.error('Error loading instances:', error);
+                // Continue without instances if they fail to load
+            });
     };
 
-    // Delete an environment
-    $scope.deleteEnv = function(id) {
-        $http.delete(`http://localhost:8000/api/environments/${id}/`)
-        .then(function() {
-            $scope.environments = $scope.environments.filter(e => e.id !== id);
-        })
-        .catch(function(err) {
-            console.error('Error deleting environment:', err);
-        });
+    // Load environments from API
+    $scope.loadEnvironments = function() {
+        $http.get('http://localhost:8001/api/environments/')
+            .then(function(response) {
+                $scope.environments = response.data;
+            })
+            .catch(function(error) {
+                console.error('Error loading environments:', error);
+            });
     };
 
-    // Map instance ID to instance name
-    $scope.getInstanceName = function(id) {
-        const inst = $scope.towerInstances.find(i => i.id === id);
-        return inst ? inst.name : "Unknown";
+    // Add new environment
+    $scope.addEnvironment = function() {
+        if (!$scope.newEnv.name) {
+            alert('Name is required');
+            return;
+        }
+
+        $http.post('http://localhost:8001/api/environments/', $scope.newEnv)
+            .then(function(response) {
+                $scope.environments.push(response.data);
+                $scope.newEnv = {}; // Reset form
+                alert('Environment added successfully!');
+            })
+            .catch(function(error) {
+                console.error('Error adding environment:', error);
+                alert('Error adding environment. Please try again.');
+            });
     };
 
-    // Initialize
-    $scope.loadInstances();
+    // Delete environment
+    $scope.deleteEnvironment = function(id) {
+        if (confirm('Are you sure you want to delete this environment?')) {
+            $http.delete(`http://localhost:8001/api/environments/${id}/`)
+                .then(function() {
+                    $scope.environments = $scope.environments.filter(e => e.id !== id);
+                    alert('Environment deleted successfully!');
+                })
+                .catch(function(error) {
+                    console.error('Error deleting environment:', error);
+                    alert('Error deleting environment. Please try again.');
+                });
+        }
+    };
+
+    // Initialize data loading
     $scope.loadEnvironments();
+    $scope.loadInstances();
 });

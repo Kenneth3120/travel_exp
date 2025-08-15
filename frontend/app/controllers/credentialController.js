@@ -1,61 +1,79 @@
 angular.module('towerAdminApp')
 .controller('CredentialController', function($scope, $http) {
 
-    // Filter models
-    $scope.filterName = '';
-    $scope.filterType = '';
-    $scope.filterInstance = '';
-
-    // Data models
     $scope.credentials = [];
-    $scope.filteredCredentials = [];
-    $scope.towerInstances = [];
-    $scope.totalCredentials = 0;
+    $scope.newCredential = {};
+    $scope.organizations = [];
+    $scope.credentialTypes = ['Machine', 'Network', 'Cloud', 'Source Control', 'Vault'];
 
-    // Load credentials via Django Proxy
+    // Load credentials from backend API
     $scope.loadCredentials = function() {
-        $http.get('http://localhost:8000/api/tower-credentials/')
-        .then(function(response) {
-            $scope.credentials = response.data.results || response.data;
-            $scope.totalCredentials = $scope.credentials.length;
-            $scope.filteredCredentials = $scope.credentials;
-        })
-        .catch(function(err) {
-            console.error('Error fetching credentials from tower proxy:', err);
-            alert("Error fetching credentials from tower proxy.");
-        });
+        // Load from Django backend
+        $http.get('http://localhost:8001/api/credentials/')
+            .then(function(response) {
+                $scope.credentials = response.data;
+            })
+            .catch(function(error) {
+                console.error('Error loading credentials from backend:', error);
+                // Fallback: Try loading from Tower proxy
+                $http.get('http://localhost:8001/api/tower-credentials/')
+                    .then(function(response) {
+                        $scope.credentials = response.data;
+                    })
+                    .catch(function(proxyError) {
+                        console.error('Error loading credentials from Tower proxy:', proxyError);
+                        alert('Error loading credentials. Please check your connection.');
+                    });
+            });
     };
 
-    // Load organizations (instances) for filter dropdown
-    $scope.loadInstances = function() {
-        $http.get('http://localhost:8000/api/organizations/')
-        .then(function(response) {
-            $scope.towerInstances = response.data.results || response.data;
-        })
-        .catch(function(err) {
-            console.error('Failed loading organizations:', err);
-        });
+    // Load organizations
+    $scope.loadOrganizations = function() {
+        $http.get('http://localhost:8001/api/organizations/')
+            .then(function(response) {
+                $scope.organizations = response.data;
+            })
+            .catch(function(error) {
+                console.error('Error loading organizations:', error);
+                // Continue without organizations if they fail to load
+            });
     };
 
-    // Filter function
-    $scope.credFilter = function(cred) {
-        const name = cred.name?.toLowerCase() || '';
-        const type = cred.summary_fields?.credential_type?.name?.toLowerCase() || '';
-        const org  = cred.summary_fields?.organization?.name?.toLowerCase() || '';
+    // Add new credential
+    $scope.addCredential = function() {
+        if (!$scope.newCredential.name || !$scope.newCredential.type) {
+            alert('Name and Type are required');
+            return;
+        }
 
-        const matchesName = !$scope.filterName || name.includes($scope.filterName.toLowerCase());
-        const matchesType = !$scope.filterType || type.includes($scope.filterType.toLowerCase());
-        const matchesOrg  = !$scope.filterInstance || org.includes($scope.filterInstance.toLowerCase());
-
-        return matchesName && matchesType && matchesOrg;
+        $http.post('http://localhost:8001/api/credentials/', $scope.newCredential)
+            .then(function(response) {
+                $scope.credentials.push(response.data);
+                $scope.newCredential = {}; // Reset form
+                alert('Credential added successfully!');
+            })
+            .catch(function(error) {
+                console.error('Error adding credential:', error);
+                alert('Error adding credential. Please try again.');
+            });
     };
 
-    // Watch for filter changes
-    $scope.$watchGroup(['filterName', 'filterType', 'filterInstance', 'credentials'], function() {
-        $scope.filteredCredentials = $scope.credentials.filter($scope.credFilter);
-    });
+    // Delete credential
+    $scope.deleteCredential = function(id) {
+        if (confirm('Are you sure you want to delete this credential?')) {
+            $http.delete(`http://localhost:8001/api/credentials/${id}/`)
+                .then(function() {
+                    $scope.credentials = $scope.credentials.filter(c => c.id !== id);
+                    alert('Credential deleted successfully!');
+                })
+                .catch(function(error) {
+                    console.error('Error deleting credential:', error);
+                    alert('Error deleting credential. Please try again.');
+                });
+        }
+    };
 
-    // Initialize
+    // Initialize data loading
     $scope.loadCredentials();
-    $scope.loadInstances();
+    $scope.loadOrganizations();
 });

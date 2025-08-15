@@ -1,67 +1,77 @@
 angular.module('towerAdminApp')
 .controller('InstanceController', function($scope, $http) {
 
-    // Data models
     $scope.instances = [];
     $scope.newInstance = {};
+    $scope.uniqueRegions = [];
+    $scope.uniqueEnvironments = [];
     $scope.filters = {
         region: '',
         environment: ''
     };
-    $scope.uniqueRegions = [];
-    $scope.uniqueEnvironments = [];
 
     // Load instances from API
     $scope.loadInstances = function() {
-        $http.get('http://localhost:8000/api/instances/')
+        $http.get('http://localhost:8001/api/instances/')
             .then(function(response) {
                 $scope.instances = response.data;
-                $scope.extractFilterValues();
+                $scope.updateUniqueValues();
             })
             .catch(function(error) {
-                console.error('Failed to load instances:', error);
+                console.error('Error loading instances:', error);
+                alert('Error loading instances. Please check your connection.');
             });
     };
 
-    // Extract unique values for dropdown filters
-    $scope.extractFilterValues = function() {
-        $scope.uniqueRegions = [...new Set($scope.instances.map(i => i.region))];
-        $scope.uniqueEnvironments = [...new Set($scope.instances.map(i => i.environment))];
+    // Update unique values for filters
+    $scope.updateUniqueValues = function() {
+        $scope.uniqueRegions = [...new Set($scope.instances.map(i => i.region).filter(r => r))];
+        $scope.uniqueEnvironments = [...new Set($scope.instances.map(i => i.environment).filter(e => e))];
     };
 
-    // Filter function for ng-repeat
-    $scope.filterByRegionAndEnvironment = function(instance) {
-        const matchRegion = !$scope.filters.region || instance.region === $scope.filters.region;
-        const matchEnv = !$scope.filters.environment || instance.environment === $scope.filters.environment;
-        return matchRegion && matchEnv;
-    };
-
-    // Add a new instance
+    // Add new instance
     $scope.addInstance = function() {
-        $http.post('http://localhost:8000/api/instances/', $scope.newInstance)
+        if (!$scope.newInstance.name || !$scope.newInstance.url) {
+            alert('Name and URL are required');
+            return;
+        }
+
+        $http.post('http://localhost:8001/api/instances/', $scope.newInstance)
             .then(function(response) {
                 $scope.instances.push(response.data);
-                $scope.newInstance = {}; // reset form
-                $scope.extractFilterValues();
+                $scope.newInstance = {}; // Reset form
+                $scope.updateUniqueValues();
+                alert('Instance added successfully!');
             })
             .catch(function(error) {
-                console.error('Failed to add instance:', error);
+                console.error('Error adding instance:', error);
+                alert('Error adding instance. Please try again.');
             });
     };
 
-    // Delete an instance
+    // Delete instance
     $scope.deleteInstance = function(id) {
-        $http.delete(`http://localhost:8000/api/instances/${id}/`)
-            .then(function() {
-                $scope.instances = $scope.instances.filter(i => i.id !== id);
-                $scope.extractFilterValues();
-            })
-            .catch(function(error) {
-                console.error('Failed to delete instance:', error);
-            });
+        if (confirm('Are you sure you want to delete this instance?')) {
+            $http.delete(`http://localhost:8001/api/instances/${id}/`)
+                .then(function() {
+                    $scope.instances = $scope.instances.filter(i => i.id !== id);
+                    $scope.updateUniqueValues();
+                    alert('Instance deleted successfully!');
+                })
+                .catch(function(error) {
+                    console.error('Error deleting instance:', error);
+                    alert('Error deleting instance. Please try again.');
+                });
+        }
     };
 
-    // Initialize
-    $scope.loadInstances();
+    // Filter function for instances
+    $scope.filterByRegionAndEnvironment = function(instance) {
+        const regionMatch = !$scope.filters.region || instance.region === $scope.filters.region;
+        const environmentMatch = !$scope.filters.environment || instance.environment === $scope.filters.environment;
+        return regionMatch && environmentMatch;
+    };
 
+    // Initialize data loading
+    $scope.loadInstances();
 });

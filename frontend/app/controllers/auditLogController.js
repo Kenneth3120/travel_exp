@@ -1,28 +1,31 @@
-angular.module('towerAdminApp').controller('AuditlogController', function($scope, $http) {
+angular.module('towerAdminApp')
+.controller('AuditlogController', function($scope, $http) {
 
     $scope.auditlogs = [];
-
-    // Fetch from backend API
-    $http.get("http://localhost:8000/api/audit-logs/")
+    
+    // Load audit logs
+    $http.get("http://localhost:8001/api/audit-logs/")
         .then(function(response) {
-            $scope.auditlogs = response.data;
+            $scope.auditlogs = response.data.results || response.data || [];
         })
         .catch(function(error) {
-            console.error('Error fetching audit logs:', error);
+            console.error('Error loading audit logs:', error);
+            alert('Error loading audit logs. Please check your connection.');
         });
 
-    // Search filters
-    $scope.searchUser = "";
-    $scope.searchType = "";
-
+    // Filter function for audit logs
     $scope.auditFilter = function(log) {
-        const userMatch = !$scope.searchUser || 
-            log.user.toLowerCase().includes($scope.searchUser.toLowerCase());
+        let userMatch = true;
+        let typeMatch = true;
 
-        const typeMatch = !$scope.searchType || 
-            log.object_type.toLowerCase().includes($scope.searchType.toLowerCase());
+        if ($scope.searchUser && $scope.searchUser.trim()) {
+            userMatch = log.user && log.user.toLowerCase().includes($scope.searchUser.toLowerCase());
+        }
+
+        if ($scope.searchType && $scope.searchType.trim()) {
+            typeMatch = log.object_type && log.object_type.toLowerCase().includes($scope.searchType.toLowerCase());
+        }
 
         return userMatch && typeMatch;
     };
-
 });

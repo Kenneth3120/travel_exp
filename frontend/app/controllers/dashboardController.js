@@ -25,106 +25,116 @@ angular.module('towerAdminApp')
         $scope.toasts = $scope.toasts.filter(t => t.id !== id);
     };
 
-    // Previous counts to detect changes
-    let previousInstanceCount = 0;
-    let previousCredentialCount = 0;
-    let previousEnvironmentCount = 0;
-
-    // Fetch counts
-    const fetchCounts = [
-        $http.get('http://localhost:8000/api/tower/')
-            .then(function(res) {
-                $scope.instanceCount = res.data.length || 0;
-                if ($scope.instanceCount > previousInstanceCount) {
-                    $scope.showToast("info", "New instances added");
-                }
-                previousInstanceCount = $scope.instanceCount;
-            }),
-
-        $http.get('http://localhost:8000/api/credentials/')
-            .then(function(res) {
-                $scope.credentialCount = res.data.length || 0;
-                if ($scope.credentialCount > previousCredentialCount) {
-                    $scope.showToast("success", "New credential created");
-                }
-                previousCredentialCount = $scope.credentialCount;
-            }),
-
-        $http.get('http://localhost:8000/api/environments/')
-            .then(function(res) {
-                $scope.environmentCount = res.data.length || 0;
-                if ($scope.environmentCount > previousEnvironmentCount) {
-                    $scope.showToast("info", "Environment updated recently");
-                }
-                previousEnvironmentCount = $scope.environmentCount;
+    // Load Instance Count with Error Handling
+    const loadInstanceCount = function() {
+        $http.get('http://localhost:8001/api/instances/')
+            .then(function(response) {
+                $scope.instanceCount = response.data.length;
             })
-    ];
+            .catch(function(error) {
+                console.error('Error loading instances:', error);
+                $scope.instanceCount = 0;
+            });
+    };
 
-    $q.all(fetchCounts).then(function() {
-        $scope.loadingCounts = false;
+    // Load Credential Count with Error Handling  
+    const loadCredentialCount = function() {
+        $http.get('http://localhost:8001/api/credentials/')
+            .then(function(response) {
+                $scope.credentialCount = response.data.length;
+            })
+            .catch(function(error) {
+                console.error('Error loading credentials:', error);
+                $scope.credentialCount = 0;
+            });
+    };
 
-        $timeout(function() {
-            const instanceChartEl = document.getElementById('instanceChart');
-            if (instanceChartEl) {
-                new Chart(instanceChartEl, {
-                    type: 'bar',
-                    data: {
-                        labels: ['Instances', 'Credentials', 'Environments'],
-                        datasets: [{
-                            label: 'Entity Count',
-                            data: [$scope.instanceCount, $scope.credentialCount, $scope.environmentCount],
-                            backgroundColor: ['#4e79a7', '#f28e2c', '#e15759']
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: { legend: { display: false } },
-                        scales: { y: { beginAtZero: true } }
-                    }
-                });
-            }
+    // Load Environment Count with Error Handling
+    const loadEnvironmentCount = function() {
+        $http.get('http://localhost:8001/api/environments/')
+            .then(function(response) {
+                $scope.environmentCount = response.data.length;
+            })
+            .catch(function(error) {
+                console.error('Error loading environments:', error);
+                $scope.environmentCount = 0;
+            });
+    };
 
-            const jobChartEl = document.getElementById('jobChart');
-            if (jobChartEl) {
-                new Chart(jobChartEl, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['Success', 'Failure'],
-                        datasets: [{
-                            label: 'Jobs',
-                            data: [40, 60],
-                            backgroundColor: ['#59a14f', '#e15759']
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false
-                    }
-                });
-            }
+    // Load Counts with Promise.all to handle all at once
+    const loadAllCounts = function() {
+        $scope.loadingCounts = true;
+        
+        const promises = [
+            $http.get('http://localhost:8001/api/instances/').catch(() => ({ data: [] })),
+            $http.get('http://localhost:8001/api/credentials/').catch(() => ({ data: [] })),
+            $http.get('http://localhost:8001/api/environments/').catch(() => ({ data: [] }))
+        ];
 
-            // Toast for failed jobs
-            const failedJobs = 20;
-            if (failedJobs > 0) {
-                $scope.showToast("error", `${failedJobs} jobs failed recently.`);
-            }
-
-        }, 300);
-    });
-
-    // Fetch recent audit logs
-    $http.get('http://localhost:8000/api/audit-logs/?limit=5')
-        .then(function(res) {
-            $scope.recentChanges = res.data.results || res.data || [];
-            $scope.loadingLogs = false;
-            if ($scope.recentChanges.length > 0) {
-                $scope.showToast("info", "New activity detected in audit logs");
-            }
-        })
-        .catch(function(err) {
-            console.error('Error fetching audit logs:', err);
-            $scope.loadingLogs = false;
+        $q.all(promises).then(function(responses) {
+            $scope.instanceCount = responses[0].data.length || 0;
+            $scope.credentialCount = responses[1].data.length || 0;
+            $scope.environmentCount = responses[2].data.length || 0;
+            $scope.loadingCounts = false;
+        }).catch(function(error) {
+            console.error('Error loading counts:', error);
+            $scope.instanceCount = 0;
+            $scope.credentialCount = 0;
+            $scope.environmentCount = 0;
+            $scope.loadingCounts = false;
         });
+    };
 
+    // Load Recent Audit Logs
+    const loadRecentChanges = function() {
+        $scope.loadingLogs = true;
+        
+        $http.get('http://localhost:8001/api/audit-logs/?limit=5')
+            .then(function(response) {
+                $scope.recentChanges = response.data.results || response.data || [];
+                $scope.loadingLogs = false;
+            })
+            .catch(function(error) {
+                console.error('Error fetching audit logs:', error);
+                $scope.recentChanges = [];
+                $scope.loadingLogs = false;
+            });
+    };
+
+    // Initialize Data Loading
+    loadAllCounts();
+    loadRecentChanges();
+
+    // Chart Configuration and Rendering
+    $timeout(function() {
+        if ($scope.instanceCount > 0 || $scope.credentialCount > 0 || $scope.environmentCount > 0) {
+            renderJobChart();
+        }
+    }, 1000);
+
+    function renderJobChart() {
+        const ctx = document.getElementById('JobChart');
+        if (ctx) {
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Instances', 'Credentials', 'Environments'],
+                    datasets: [{
+                        data: [$scope.instanceCount, $scope.credentialCount, $scope.environmentCount],
+                        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+    }
 });

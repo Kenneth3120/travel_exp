@@ -11,7 +11,7 @@ import time
 class FrontendIntegrationTester:
     def __init__(self):
         self.backend_url = "http://localhost:8001/api"
-        self.frontend_url = "http://127.0.0.1:4208"
+        self.frontend_url = "http://localhost:4208"
         self.access_token = None
         self.tests_run = 0
         self.tests_passed = 0
